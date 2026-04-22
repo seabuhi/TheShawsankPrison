@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Shawshank Redemption — 1994</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #e8c96a;
+    --cream: #f5ead0;
+    --dark: #0a0806;
+    --dark2: #12100d;
+    --dark3: #1e1a14;
+    --rust: #8b3a1a;
+    --muted: #7a6a52;
+    --text: #d4c4a8;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--dark);
+    color: var(--text);
+    font-family: 'Crimson Text', serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* CUSTOM CURSOR */
+  .cursor {
+    position: fixed; width: 8px; height: 8px;
+    background: var(--gold); border-radius: 50%;
+    pointer-events: none; z-index: 9999;
+    transition: transform 0.1s ease;
+    mix-blend-mode: difference;
+  }
+  .cursor-ring {
+    position: fixed; width: 36px; height: 36px;
+    border: 1px solid rgba(201,168,76,0.4);
+    border-radius: 50%; pointer-events: none; z-index: 9998;
+    transition: transform 0.18s ease, width 0.2s, height 0.2s;
+  }
+
+  /* THREE.JS CANVAS */
+  #bg-canvas {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0; pointer-events: none;
+  }
+
+  /* HERO BG IMAGE */
+  #hero {
+    background-image: url('http://www.impawards.com/1994/posters/shawshank_redemption_ver1_xlg.jpg');
+    background-size: cover;
+    background-position: center top;
+    background-attachment: fixed;
+  }
+  #hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(10,8,6,0.55) 0%,
+      rgba(10,8,6,0.3) 40%,
+      rgba(10,8,6,0.75) 100%
+    );
+    z-index: 0;
+  }
+  #hero > * { position: relative; z-index: 1; }
+
+  /* CHAR IMAGE */
+  .char-img-wrap {
+    width: 100%; height: 220px;
+    overflow: hidden; margin-bottom: 1.5rem;
+    position: relative;
+  }
+  .char-img-wrap img {
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center center;
+    filter: sepia(30%) contrast(1.1) brightness(0.85);
+    transition: transform 0.6s ease, filter 0.4s;
+    display: block;
+  }
+  .char-card:hover .char-img-wrap img {
+    transform: scale(1.05);
+    filter: sepia(10%) contrast(1.15) brightness(0.95);
+  }
+  .char-img-wrap::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: linear-gradient(0deg, rgba(18,16,13,1), transparent);
+  }
+
+  /* CLIMAX IMAGE */
+  .climax-img {
+    width: 100%; max-width: 700px;
+    margin: 2rem auto;
+    position: relative; overflow: hidden;
+    border: 1px solid rgba(201,168,76,0.2);
+  }
+  .climax-img img {
+    width: 100%; display: block;
+    filter: sepia(20%) contrast(1.2) brightness(0.8);
+    transition: transform 0.8s ease;
+  }
+  .climax-img:hover img { transform: scale(1.03); }
+  .climax-img::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(10,8,6,0.4) 0%,
+      transparent 40%,
+      rgba(10,8,6,0.5) 100%
+    );
+  }
+
+  /* PROGRESS BAR */
+  #progress {
+    position: fixed; top: 0; left: 0; height: 2px;
+    background: linear-gradient(90deg, var(--rust), var(--gold), var(--gold-light));
+    z-index: 1000; width: 0%; transition: width 0.1s;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100; padding: 1.5rem 3rem;
+    display: flex; justify-content: space-between; align-items: center;
+    background: linear-gradient(180deg, rgba(10,8,6,0.9) 0%, transparent 100%);
+  }
+  .nav-logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 0.25em;
+    color: var(--gold); text-transform: uppercase;
+    opacity: 0.8;
+  }
+  .nav-links { display: flex; gap: 2.5rem; }
+  .nav-links a {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem; letter-spacing: 0.2em;
+    color: var(--muted); text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--gold); }
+
+  /* SECTIONS */
+  section {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+  }
+
+  /* ── HERO ── */
+  #hero {
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    text-align: center;
+    padding: 0 2rem;
+    background: radial-gradient(ellipse at center bottom, rgba(139,58,26,0.15) 0%, transparent 70%);
+  }
+
+  .hero-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 0.4em;
+    color: var(--gold); text-transform: uppercase;
+    margin-bottom: 2rem;
+    opacity: 0; transform: translateY(20px);
+    animation: fadeUp 1s 0.3s forwards;
+  }
+
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3.5rem, 10vw, 9rem);
+    font-weight: 900; line-height: 0.9;
+    color: var(--cream);
+    letter-spacing: -0.02em;
+    opacity: 0; transform: translateY(30px);
+    animation: fadeUp 1.2s 0.5s forwards;
+  }
+  .hero-title em {
+    font-style: italic; color: var(--gold);
+    display: block;
+  }
+
+  .hero-sub {
+    font-family: 'Crimson Text', serif;
+    font-size: 1.2rem; font-style: italic;
+    color: var(--muted); margin-top: 2rem;
+    letter-spacing: 0.05em;
+    opacity: 0; transform: translateY(20px);
+    animation: fadeUp 1s 0.9s forwards;
+  }
+
+  .hero-meta {
+    display: flex; gap: 3rem; margin-top: 3rem;
+    opacity: 0; animation: fadeUp 1s 1.2s forwards;
+  }
+  .hero-meta-item {
+    text-align: center;
+  }
+  .hero-meta-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem; letter-spacing: 0.3em;
+    color: var(--muted); text-transform: uppercase;
+    display: block; margin-bottom: 0.4rem;
+  }
+  .hero-meta-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem; font-weight: 700;
+    color: var(--gold);
+  }
+
+  .scroll-cue {
+    position: absolute; bottom: 2.5rem;
+    left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column;
+    align-items: center; gap: 0.5rem;
+    opacity: 0; animation: fadeIn 1s 2s forwards;
+  }
+  .scroll-cue span {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.5rem; letter-spacing: 0.3em;
+    color: var(--muted); text-transform: uppercase;
+  }
+  .scroll-line {
+    width: 1px; height: 50px;
+    background: linear-gradient(180deg, var(--gold), transparent);
+    animation: scrollPulse 2s infinite;
+  }
+
+  /* ── INTRO QUOTE ── */
+  #quote {
+    min-height: 60vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 6rem 2rem;
+    background: linear-gradient(180deg, transparent, rgba(18,16,13,0.8), transparent);
+  }
+  .big-quote {
+    max-width: 900px; text-align: center;
+  }
+  .big-quote blockquote {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-style: italic; line-height: 1.4;
+    color: var(--cream);
+    position: relative; padding: 0 3rem;
+  }
+  .big-quote blockquote::before,
+  .big-quote blockquote::after {
+    font-family: 'Playfair Display', serif;
+    font-size: 8rem; line-height: 0;
+    color: rgba(201,168,76,0.15);
+    position: absolute;
+  }
+  .big-quote blockquote::before { content: '"'; top: 1.5rem; left: -0.5rem; }
+  .big-quote blockquote::after { content: '"'; bottom: -1rem; right: -0.5rem; }
+  .big-quote cite {
+    display: block; margin-top: 1.5rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 0.3em;
+    color: var(--gold); font-style: normal;
+    text-transform: uppercase;
+  }
+
+  /* ── STORY SECTION ── */
+  #story {
+    padding: 8rem 0;
+    background: linear-gradient(180deg, transparent, rgba(10,8,6,0.5), transparent);
+  }
+
+  .section-header {
+    text-align: center; margin-bottom: 6rem;
+    padding: 0 2rem;
+  }
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem; letter-spacing: 0.4em;
+    color: var(--gold); text-transform: uppercase;
+    display: block; margin-bottom: 1rem;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 4rem);
+    font-weight: 900; color: var(--cream);
+    line-height: 1.1;
+  }
+
+  .timeline {
+    max-width: 900px; margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+  }
+  .timeline::before {
+    content: ''; position: absolute;
+    left: 50%; top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(180deg, transparent, var(--gold), transparent);
+    transform: translateX(-50%);
+  }
+
+  .timeline-item {
+    display: grid; grid-template-columns: 1fr 80px 1fr;
+    align-items: center; margin-bottom: 5rem;
+    opacity: 0; transform: translateY(30px);
+    transition: opacity 0.7s, transform 0.7s;
+  }
+  .timeline-item.visible { opacity: 1; transform: translateY(0); }
+  .timeline-item:nth-child(odd) .tl-content { grid-column: 1; text-align: right; }
+  .timeline-item:nth-child(odd) .tl-empty { grid-column: 3; }
+  .timeline-item:nth-child(even) .tl-content { grid-column: 3; }
+  .timeline-item:nth-child(even) .tl-empty { grid-column: 1; }
+
+  .tl-dot {
+    grid-column: 2;
+    display: flex; justify-content: center; align-items: center;
+    width: 16px; height: 16px;
+    border: 1px solid var(--gold);
+    border-radius: 50%; margin: 0 auto;
+    background: var(--dark);
+    position: relative; z-index: 2;
+  }
+  .tl-dot::after {
+    content: ''; width: 6px; height: 6px;
+    background: var(--gold); border-radius: 50%;
+  }
+
+  .tl-content {
+    padding: 0 2rem;
+  }
+  .tl-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem; letter-spacing: 0.3em;
+    color: var(--rust); text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .tl-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem; font-weight: 700;
+    color: var(--cream); margin-bottom: 0.6rem;
+  }
+  .tl-text {
+    font-size: 0.95rem; line-height: 1.7;
+    color: var(--muted);
+  }
+
+  /* ── CHARACTERS ── */
+  #characters {
+    padding: 8rem 2rem;
+    background: radial-gradient(ellipse at 30% 50%, rgba(139,58,26,0.08) 0%, transparent 60%);
+  }
+
+  .chars-grid {
+    max-width: 1100px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 4rem; align-items: start;
+  }
+
+  .char-card {
+    position: relative;
+    border: 1px solid rgba(201,168,76,0.15);
+    padding: 3rem;
+    background: rgba(18,16,13,0.6);
+    backdrop-filter: blur(10px);
+    opacity: 0; transform: translateX(-30px);
+    transition: opacity 0.8s, transform 0.8s, border-color 0.3s;
+  }
+  .char-card:nth-child(2) { transform: translateX(30px); transition-delay: 0.2s; }
+  .char-card.visible { opacity: 1; transform: translateX(0); }
+  .char-card:hover { border-color: rgba(201,168,76,0.4); }
+
+  .char-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 5rem; font-weight: 900;
+    color: rgba(201,168,76,0.06);
+    position: absolute; top: 1rem; right: 1.5rem;
+    line-height: 1;
+  }
+  .char-actor {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem; letter-spacing: 0.3em;
+    color: var(--gold); text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .char-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem; font-weight: 900;
+    color: var(--cream); margin-bottom: 1.2rem;
+    line-height: 1.1;
+  }
+  .char-desc {
+    font-size: 1rem; line-height: 1.8;
+    color: var(--muted);
+  }
+  .char-traits {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+    margin-top: 1.5rem;
+  }
+  .char-trait {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem; letter-spacing: 0.2em;
+    color: var(--gold); text-transform: uppercase;
+    border: 1px solid rgba(201,168,76,0.3);
+    padding: 0.3rem 0.8rem;
+  }
+
+  /* ── THEMES ── */
+  #themes {
+    padding: 8rem 2rem;
+  }
+
+  .themes-grid {
+    max-width: 1100px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 2px;
+  }
+
+  .theme-block {
+    position: relative; overflow: hidden;
+    padding: 4rem 3rem; min-height: 280px;
+    display: flex; flex-direction: column;
+    justify-content: flex-end;
+    cursor: pointer;
+    opacity: 0; transform: scale(0.95);
+    transition: opacity 0.7s, transform 0.7s;
+  }
+  .theme-block.visible { opacity: 1; transform: scale(1); }
+  .theme-block:nth-child(1) { background: linear-gradient(135deg, #1a1208, #2a1e0a); transition-delay: 0s; }
+  .theme-block:nth-child(2) { background: linear-gradient(135deg, #0d1520, #0a1a2e); transition-delay: 0.1s; }
+  .theme-block:nth-child(3) { background: linear-gradient(135deg, #120a0a, #1e0f0f); transition-delay: 0.2s; }
+  .theme-block:nth-child(4) { background: linear-gradient(135deg, #0e1410, #0a1a0e); transition-delay: 0.3s; }
+
+  .theme-bg-text {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Playfair Display', serif;
+    font-size: 8rem; font-weight: 900;
+    color: rgba(255,255,255,0.03);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  .theme-icon {
+    font-size: 2rem; margin-bottom: 1rem;
+    filter: brightness(0.7);
+  }
+  .theme-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem; letter-spacing: 0.3em;
+    text-transform: uppercase; margin-bottom: 0.5rem;
+  }
+  .theme-block:nth-child(1) .theme-label { color: var(--gold); }
+  .theme-block:nth-child(2) .theme-label { color: #6ab0e8; }
+  .theme-block:nth-child(3) .theme-label { color: #e88a6a; }
+  .theme-block:nth-child(4) .theme-label { color: #6ae8a0; }
+
+  .theme-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem; font-weight: 900;
+    color: var(--cream); line-height: 1;
+    margin-bottom: 1rem;
+  }
+  .theme-desc {
+    font-size: 0.9rem; line-height: 1.7;
+    color: rgba(212,196,168,0.6);
+    max-width: 320px;
+  }
+
+  .theme-block::after {
+    content: ''; position: absolute;
+    bottom: 0; left: 0; right: 0; height: 2px;
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.4s;
+  }
+  .theme-block:nth-child(1)::after { background: var(--gold); }
+  .theme-block:nth-child(2)::after { background: #378ADD; }
+  .theme-block:nth-child(3)::after { background: #D85A30; }
+  .theme-block:nth-child(4)::after { background: #3B6D11; }
+  .theme-block:hover::after { transform: scaleX(1); }
+
+  /* ── SETTING ── */
+  #setting {
+    padding: 8rem 2rem;
+    background: linear-gradient(180deg, transparent, rgba(139,58,26,0.05), transparent);
+  }
+
+  .setting-inner {
+    max-width: 1100px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 6rem; align-items: center;
+  }
+
+  .setting-visual {
+    position: relative; height: 500px;
+  }
+  .prison-graphic {
+    width: 100%; height: 100%;
+    border: 1px solid rgba(201,168,76,0.2);
+    position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #0f0c08, #1a150f);
+  }
+
+  /* CSS bars animation */
+  .bars-container {
+    position: absolute; inset: 0;
+    display: flex; align-items: stretch;
+    padding: 2rem;
+    gap: 1.5rem;
+  }
+  .bar {
+    flex: 1;
+    background: linear-gradient(180deg, rgba(201,168,76,0.15), rgba(201,168,76,0.05));
+    border-left: 1px solid rgba(201,168,76,0.3);
+    border-right: 1px solid rgba(201,168,76,0.3);
+    animation: barPulse 3s infinite;
+    transform-origin: bottom;
+  }
+  .bar:nth-child(1) { animation-delay: 0s; }
+  .bar:nth-child(2) { animation-delay: 0.2s; }
+  .bar:nth-child(3) { animation-delay: 0.4s; }
+  .bar:nth-child(4) { animation-delay: 0.6s; }
+  .bar:nth-child(5) { animation-delay: 0.8s; }
+  .bar:nth-child(6) { animation-delay: 1s; }
+  .bar:nth-child(7) { animation-delay: 1.2s; }
+  .bar:nth-child(8) { animation-delay: 1.4s; }
+
+  .prison-overlay {
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 39px,
+      rgba(201,168,76,0.06) 39px,
+      rgba(201,168,76,0.06) 40px
+    );
+  }
+
+  .prison-light {
+    position: absolute; top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 1px; height: 100%;
+    background: linear-gradient(180deg, rgba(201,168,76,0.5), transparent);
+    box-shadow: 0 0 40px 10px rgba(201,168,76,0.1);
+    animation: lightSway 4s ease-in-out infinite;
+  }
+
+  .setting-text {}
+  .setting-quote {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem; font-style: italic;
+    line-height: 1.5; color: var(--cream);
+    margin-bottom: 2rem;
+  }
+  .setting-detail {
+    font-size: 1rem; line-height: 1.9;
+    color: var(--muted); margin-bottom: 1.5rem;
+  }
+
+  /* ── CLIMAX ── */
+  #climax {
+    padding: 8rem 2rem; text-align: center;
+    background: radial-gradient(ellipse at center, rgba(8,80,65,0.08) 0%, transparent 70%);
+  }
+
+  .climax-inner { max-width: 700px; margin: 0 auto; }
+
+  .climax-number {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(6rem, 20vw, 14rem);
+    font-weight: 900; color: rgba(201,168,76,0.06);
+    line-height: 0.8; margin-bottom: -2rem;
+    display: block;
+  }
+  .climax-event {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem; letter-spacing: 0.4em;
+    color: var(--gold); text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .climax-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 900; color: var(--cream);
+    margin-bottom: 1.5rem; line-height: 1.1;
+  }
+  .climax-text {
+    font-size: 1.1rem; line-height: 1.8;
+    color: var(--muted); margin-bottom: 3rem;
+  }
+
+  .escape-animation {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 3rem 0;
+    position: relative; overflow: hidden;
+  }
+  .escape-animation::after {
+    content: ''; position: absolute;
+    top: -1px; left: -20%;
+    width: 20%; height: 4px;
+    background: var(--gold-light);
+    box-shadow: 0 0 20px var(--gold);
+    animation: escapeLine 2.5s ease-in-out infinite;
+  }
+
+  /* ── OPINION / REVIEW ── */
+  #review {
+    padding: 8rem 2rem;
+  }
+  .review-inner {
+    max-width: 800px; margin: 0 auto; text-align: center;
+  }
+  .stars {
+    display: flex; gap: 0.5rem;
+    justify-content: center; margin-bottom: 2rem;
+  }
+  .star {
+    color: var(--gold); font-size: 1.5rem;
+    animation: starBlink 3s infinite;
+  }
+  .star:nth-child(1) { animation-delay: 0s; }
+  .star:nth-child(2) { animation-delay: 0.3s; }
+  .star:nth-child(3) { animation-delay: 0.6s; }
+  .star:nth-child(4) { animation-delay: 0.9s; }
+  .star:nth-child(5) { animation-delay: 1.2s; }
+
+  .review-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+    font-style: italic; line-height: 1.6;
+    color: var(--cream); margin-bottom: 2rem;
+  }
+
+  .review-tags {
+    display: flex; justify-content: center;
+    flex-wrap: wrap; gap: 1rem; margin-top: 2rem;
+  }
+  .review-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem; letter-spacing: 0.2em;
+    text-transform: uppercase;
+    border: 1px solid rgba(201,168,76,0.3);
+    padding: 0.5rem 1.2rem; color: var(--gold);
+    transition: background 0.3s, color 0.3s;
+  }
+  .review-tag:hover {
+    background: rgba(201,168,76,0.1);
+  }
+
+  /* ── OUTRO ── */
+  #outro {
+    min-height: 70vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 4rem 2rem;
+    background: radial-gradient(ellipse at center bottom, rgba(139,58,26,0.12) 0%, transparent 60%);
+  }
+  .outro-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem; letter-spacing: 0.5em;
+    color: var(--muted); text-transform: uppercase;
+    margin-bottom: 2rem;
+  }
+  .outro-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 8vw, 7rem);
+    font-weight: 900; line-height: 0.9;
+    color: var(--cream);
+  }
+  .outro-title span { color: var(--gold); display: block; }
+  .outro-by {
+    margin-top: 3rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem; letter-spacing: 0.4em;
+    color: var(--muted); text-transform: uppercase;
+  }
+  .outro-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem; color: var(--gold);
+    margin-top: 0.5rem;
+  }
+
+  .divider {
+    max-width: 200px; margin: 4rem auto;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  /* KEYFRAMES */
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.3; transform: scaleY(0.8); }
+    50% { opacity: 1; transform: scaleY(1); }
+  }
+  @keyframes barPulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.7; }
+  }
+  @keyframes lightSway {
+    0%, 100% { transform: translateX(-50%) rotate(0deg); }
+    50% { transform: translateX(-50%) rotate(2deg); }
+  }
+  @keyframes escapeLine {
+    0% { left: -20%; }
+    100% { left: 120%; }
+  }
+  @keyframes starBlink {
+    0%, 80%, 100% { opacity: 1; transform: scale(1); }
+    90% { opacity: 0.5; transform: scale(0.8); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  /* PARALLAX SECTIONS */
+  .parallax-text {
+    will-change: transform;
+  }
+
+  /* SCROLL REVEAL */
+  .reveal {
+    opacity: 0; transform: translateY(40px);
+    transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+<div id="progress"></div>
+<canvas id="bg-canvas"></canvas>
+
+<nav>
+  <div class="nav-logo">Shawshank · 1994</div>
+  <div class="nav-links">
+    <a href="#story">Story</a>
+    <a href="#characters">Cast</a>
+    <a href="#themes">Themes</a>
+    <a href="#climax">Climax</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-eyebrow">A Film by Frank Darabont</div>
+  <h1 class="hero-title">
+    The Shawshank
+    <em>Redemption</em>
+  </h1>
+  <p class="hero-sub">Fear can hold you prisoner. Hope can set you free.</p>
+  <div class="hero-meta">
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Year</span>
+      <span class="hero-meta-value">1994</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Genre</span>
+      <span class="hero-meta-value">Drama</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Director</span>
+      <span class="hero-meta-value">Darabont</span>
+    </div>
+  </div>
+  <div class="scroll-cue">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<section id="quote">
+  <div class="big-quote reveal">
+    <blockquote>
+      Remember, Red, hope is a good thing — maybe the best of things. And no good thing ever dies.
+    </blockquote>
+    <cite>— Andy Dufresne</cite>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- STORY -->
+<section id="story">
+  <div class="section-header reveal">
+    <span class="section-label">Chapter I</span>
+    <h2 class="section-title">The Story</h2>
+  </div>
+
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="tl-content">
+        <div class="tl-label">Act I · Arrival</div>
+        <div class="tl-title">Andy Goes to Prison</div>
+        <p class="tl-text">Banker Andy Dufresne is convicted of murdering his wife and her lover, despite his protests of innocence. He is sentenced to two consecutive life terms at Shawshank State Penitentiary.</p>
+      </div>
+      <div class="tl-dot"></div>
+      <div class="tl-empty"></div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="tl-empty"></div>
+      <div class="tl-dot"></div>
+      <div class="tl-content">
+        <div class="tl-label">Act I · Bond</div>
+        <div class="tl-title">Andy Meets Red</div>
+        <p class="tl-text">Inside Shawshank, Andy befriends Ellis Boyd "Red" Redding — the man who can get things. A profound friendship is forged between two men who see the world very differently.</p>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="tl-content">
+        <div class="tl-label">Act II · Endurance</div>
+        <div class="tl-title">Life Behind Bars</div>
+        <p class="tl-text">Andy endures the brutal corruption of Warden Norton and Captain Hadley. He survives violence, injustice, and despair — yet never surrenders the light inside him. He builds a library, helps fellow inmates earn diplomas.</p>
+      </div>
+      <div class="tl-dot"></div>
+      <div class="tl-empty"></div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="tl-empty"></div>
+      <div class="tl-dot"></div>
+      <div class="tl-content">
+        <div class="tl-label">Act III · Truth</div>
+        <div class="tl-title">The Library Project</div>
+        <p class="tl-text">Andy spends years writing letters to the state legislature, securing funds to build a proper prison library. It becomes a beacon of learning, dignity, and hope for every inmate at Shawshank.</p>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="tl-content">
+        <div class="tl-label">Act III · Escape</div>
+        <div class="tl-title">Andy Escapes</div>
+        <p class="tl-text">After nearly two decades and through a tunnel dug with a rock hammer over nineteen years, Andy crawls through 500 yards of filth and emerges into rain and freedom. He has already secured evidence to expose Warden Norton.</p>
+      </div>
+      <div class="tl-dot"></div>
+      <div class="tl-empty"></div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="tl-empty"></div>
+      <div class="tl-dot"></div>
+      <div class="tl-content">
+        <div class="tl-label">Finale · Reunion</div>
+        <div class="tl-title">Red Is Free</div>
+        <p class="tl-text">Paroled at last, Red — guided by Andy's hidden letter — travels to Zihuatanejo, Mexico. On a sun-drenched Pacific beach, the two friends are reunited. Hope prevails.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CHARACTERS -->
+<section id="characters">
+  <div class="section-header reveal">
+    <span class="section-label">Chapter II</span>
+    <h2 class="section-title">The Characters</h2>
+  </div>
+
+  <div class="chars-grid">
+    <div class="char-card">
+      <div class="char-img-wrap">
+        <img src="https://i.pinimg.com/1200x/78/46/12/7846124686c95694dec1dc90af7e16e0.jpg" alt="Andy Dufresne">
+      </div>
+      <div class="char-number">01</div>
+      <div class="char-actor">Tim Robbins</div>
+      <h3 class="char-name">Andy<br>Dufresne</h3>
+      <p class="char-desc">A former banker and prisoner at Shawshank, Andy is an enigmatic man of quiet dignity and extraordinary inner strength. Where others see walls, he sees windows. He uses his financial skills, intelligence, and unbreakable spirit to survive — and ultimately escape.</p>
+      <div class="char-traits">
+        <span class="char-trait">Calm</span>
+        <span class="char-trait">Intelligent</span>
+        <span class="char-trait">Hopeful</span>
+        <span class="char-trait">Resilient</span>
+      </div>
+    </div>
+
+    <div class="char-card">
+      <div class="char-img-wrap">
+        <img src="https://i.pinimg.com/736x/2a/35/eb/2a35eb35d68d5d8e8b251e95bba65a33.jpg" alt="Red Redding">
+      </div>
+      <div class="char-number">02</div>
+      <div class="char-actor">Morgan Freeman</div>
+      <h3 class="char-name">Ellis<br>"Red" Redding</h3>
+      <p class="char-desc">Red is our narrator — a man who has served time so long he's become institutionalized. Pragmatic, warm, and wise, he is changed forever by his friendship with Andy. His journey from resignation to hope is the film's emotional heartbeat.</p>
+      <div class="char-traits">
+        <span class="char-trait">Wise</span>
+        <span class="char-trait">Pragmatic</span>
+        <span class="char-trait">Loyal</span>
+        <span class="char-trait">Witty</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- THEMES -->
+<section id="themes">
+  <div class="section-header reveal">
+    <span class="section-label">Chapter III</span>
+    <h2 class="section-title">The Themes</h2>
+  </div>
+
+  <div class="themes-grid">
+    <div class="theme-block">
+      <div class="theme-bg-text">HOPE</div>
+      <div class="theme-label">Theme I</div>
+      <div class="theme-name">Hope</div>
+      <p class="theme-desc">The central force of the film. Andy never loses faith in a future beyond the walls. His hope is not naive — it is fierce, deliberate, and ultimately triumphant.</p>
+    </div>
+    <div class="theme-block">
+      <div class="theme-bg-text">FREEDOM</div>
+      <div class="theme-label">Theme II</div>
+      <div class="theme-name">Freedom</div>
+      <p class="theme-desc">The film questions what freedom truly means. One can be physically imprisoned yet internally free — or physically free yet psychologically caged by institutionalization.</p>
+    </div>
+    <div class="theme-block">
+      <div class="theme-bg-text">CORRUPTION</div>
+      <div class="theme-label">Theme III</div>
+      <div class="theme-name">Corruption</div>
+      <p class="theme-desc">Warden Norton embodies systemic corruption and the abuse of power. The prison is a mirror for broader societal failures — injustice, hypocrisy, and the exploitation of the powerless.</p>
+    </div>
+    <div class="theme-block">
+      <div class="theme-bg-text">FRIENDSHIP</div>
+      <div class="theme-label">Theme IV</div>
+      <div class="theme-name">Friendship</div>
+      <p class="theme-desc">Andy and Red's bond is the film's soul. Friendship becomes a form of resistance — proof that the human spirit cannot be entirely crushed, even in the most dehumanizing environments.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SETTING -->
+<section id="setting">
+  <div class="setting-inner">
+    <div class="setting-visual reveal">
+      <div class="prison-graphic">
+        <div class="prison-light"></div>
+        <div class="bars-container">
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+        </div>
+        <div class="prison-overlay"></div>
+      </div>
+    </div>
+
+    <div class="setting-text">
+      <span class="section-label reveal">The Setting</span>
+      <p class="setting-quote reveal reveal-delay-1">"These walls are funny. First you hate 'em, then you get used to 'em. Enough time passes, you get so you depend on 'em."</p>
+      <p class="setting-detail reveal reveal-delay-2">Shawshank State Penitentiary is not just a location — it is a character. The oppressive architecture, the rigid routines, the grinding monotony of incarcerated life: all of it shapes who the men inside become.</p>
+      <p class="setting-detail reveal reveal-delay-3">Based on Stephen King's novella <em>Rita Hayworth and Shawshank Redemption</em>, the story was filmed primarily at the Ohio State Reformatory in Mansfield, Ohio — a real, now-decommissioned prison whose gothic walls carry weight on screen.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CLIMAX -->
+<section id="climax">
+  <div class="climax-inner">
+    <span class="climax-number reveal">19</span>
+    <div class="climax-event reveal">The Great Escape</div>
+    <h2 class="climax-title reveal">Andy Crawls<br>to Freedom</h2>
+    <div class="escape-animation"></div>
+    <div class="climax-img reveal">
+      <img src="https://i.pinimg.com/736x/99/8a/9e/998a9e0a9a6d9c12e044c39312bd5acf.jpg" alt="Andy in the rain — freedom">
+    </div>
+    <p class="climax-text reveal">After 19 years of patient digging — concealed behind a poster of Rita Hayworth, then Marilyn Monroe, then Raquel Welch — Andy breaks through the prison's ancient plumbing and crawls 500 yards through sewage to the outside world. He stands in the rain with his arms outstretched: free.</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- REVIEW -->
+<section id="review">
+  <div class="review-inner">
+    <div class="section-label reveal">My Opinion</div>
+    <div class="stars reveal">
+      <span class="star">★</span>
+      <span class="star">★</span>
+      <span class="star">★</span>
+      <span class="star">★</span>
+      <span class="star">★</span>
+    </div>
+    <p class="review-text reveal">
+      "A film that does not merely entertain — it transforms. The Shawshank Redemption is an emotional, deeply human story about what it means to hold on to hope when the world has stripped everything else away. Unforgettable."
+    </p>
+    <div class="review-tags reveal">
+      <span class="review-tag">Masterpiece</span>
+      <span class="review-tag">Emotional</span>
+      <span class="review-tag">Timeless</span>
+      <span class="review-tag">Must Watch</span>
+      <span class="review-tag">Deeply Human</span>
+    </div>
+  </div>
+</section>
+
+<!-- OUTRO -->
+<section id="outro">
+  <div class="outro-label reveal">Presented by</div>
+  <h2 class="outro-title reveal">
+    Seabuhi
+    <span>Khazimzada</span>
+  </h2>
+  <p class="outro-by reveal">A Cinematic Presentation</p>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ── THREE.JS PARTICLE BACKGROUND ──
+const canvas = document.getElementById('bg-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.z = 5;
+
+// Particles
+const particleCount = 1800;
+const positions = new Float32Array(particleCount * 3);
+const velocities = new Float32Array(particleCount * 3);
+const colors = new Float32Array(particleCount * 3);
+
+for (let i = 0; i < particleCount; i++) {
+  positions[i * 3]     = (Math.random() - 0.5) * 20;
+  positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
+  positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
+
+  velocities[i * 3]     = (Math.random() - 0.5) * 0.002;
+  velocities[i * 3 + 1] = (Math.random() - 0.5) * 0.002;
+  velocities[i * 3 + 2] = 0;
+
+  // Gold to rust gradient based on position
+  const t = Math.random();
+  if (t < 0.6) {
+    colors[i * 3] = 0.79; colors[i * 3 + 1] = 0.66; colors[i * 3 + 2] = 0.30; // gold
+  } else if (t < 0.85) {
+    colors[i * 3] = 0.55; colors[i * 3 + 1] = 0.23; colors[i * 3 + 2] = 0.10; // rust
+  } else {
+    colors[i * 3] = 0.42; colors[i * 3 + 1] = 0.38; colors[i * 3 + 2] = 0.29; // muted
+  }
+}
+
+const geo = new THREE.BufferGeometry();
+geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+const mat = new THREE.PointsMaterial({
+  size: 0.025,
+  vertexColors: true,
+  transparent: true,
+  opacity: 0.6,
+  sizeAttenuation: true
+});
+
+const particles = new THREE.Points(geo, mat);
+scene.add(particles);
+
+// Mouse parallax
+let mouseX = 0, mouseY = 0;
+document.addEventListener('mousemove', e => {
+  mouseX = (e.clientX / window.innerWidth - 0.5) * 0.5;
+  mouseY = (e.clientY / window.innerHeight - 0.5) * 0.5;
+});
+
+let scrollY = 0;
+window.addEventListener('scroll', () => { scrollY = window.scrollY; });
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  const pos = particles.geometry.attributes.position.array;
+  for (let i = 0; i < particleCount; i++) {
+    pos[i * 3]     += velocities[i * 3];
+    pos[i * 3 + 1] += velocities[i * 3 + 1];
+    if (pos[i * 3] > 10)  pos[i * 3] = -10;
+    if (pos[i * 3] < -10) pos[i * 3] = 10;
+    if (pos[i * 3 + 1] > 10)  pos[i * 3 + 1] = -10;
+    if (pos[i * 3 + 1] < -10) pos[i * 3 + 1] = 10;
+  }
+  particles.geometry.attributes.position.needsUpdate = true;
+
+  camera.position.x += (mouseX - camera.position.x) * 0.03;
+  camera.position.y += (-mouseY - camera.position.y) * 0.03;
+  particles.rotation.y = scrollY * 0.0003;
+  particles.rotation.x = scrollY * 0.0001;
+
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// ── CURSOR ──
+const cur = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let cx = 0, cy = 0, rx = 0, ry = 0;
+
+document.addEventListener('mousemove', e => {
+  cx = e.clientX; cy = e.clientY;
+});
+
+function animateCursor() {
+  requestAnimationFrame(animateCursor);
+  cur.style.left = cx - 4 + 'px';
+  cur.style.top  = cy - 4 + 'px';
+  rx += (cx - rx) * 0.12;
+  ry += (cy - ry) * 0.12;
+  ring.style.left = rx - 18 + 'px';
+  ring.style.top  = ry - 18 + 'px';
+}
+animateCursor();
+
+document.querySelectorAll('a, button, .char-card, .theme-block, .review-tag').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cur.style.transform = 'scale(2.5)';
+    ring.style.width = '60px'; ring.style.height = '60px';
+    ring.style.marginLeft = '-12px'; ring.style.marginTop = '-12px';
+  });
+  el.addEventListener('mouseleave', () => {
+    cur.style.transform = 'scale(1)';
+    ring.style.width = '36px'; ring.style.height = '36px';
+    ring.style.marginLeft = '0'; ring.style.marginTop = '0';
+  });
+});
+
+// ── SCROLL PROGRESS ──
+const bar = document.getElementById('progress');
+window.addEventListener('scroll', () => {
+  const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+  bar.style.width = pct + '%';
+});
+
+// ── SCROLL REVEAL ──
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.reveal, .timeline-item, .char-card, .theme-block').forEach(el => {
+  observer.observe(el);
+});
+
+// ── PARALLAX SCROLL ──
+window.addEventListener('scroll', () => {
+  const sy = window.scrollY;
+  document.querySelectorAll('.parallax-text').forEach(el => {
+    const speed = parseFloat(el.dataset.speed) || 0.3;
+    el.style.transform = `translateY(${sy * speed}px)`;
+  });
+});
+</script>
+</body>
+</html>
